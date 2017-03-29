@@ -1,2 +1,2 @@
 # symulator-mini-rysi
-.symulator roju robotów miniRYŚ
+symulator roju robotów miniRYŚ
