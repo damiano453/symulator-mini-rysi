@@ -5,9 +5,15 @@
 clear variables
 clc
 
-%%
-addpath('vrepPort');
-modelpath='E:/Robot.ttm';
+%% DP: Dodałem ścieżkę do pliku jako zmienną, na linuhu nie banglało
+% commandFile = '/Commands.txt'   % For linux
+% outputFile = '/Output.txt'      % For linux
+commandFile = 'Commands.txt'   % For Windows
+outputFile = 'Output.txt'       % For Windows
+
+%%                                                                      %DP- Ścieżka moja
+addpath('vrepPort');                                                    %/home/damian/git-repos/symulator-mini-rysi/vrep
+modelpath='/home/damian/git-repos/symulator-mini-rysi/vrep/Robot.ttm';
 vrep=remApi('remoteApi');
 vrep.simxFinish(-1); % just in case, close all opened connections
 clientID=vrep.simxStart('127.0.0.1',19997,true,true,5000,5);
@@ -26,12 +32,12 @@ if (clientID>-1)
     [res,ultraP]=vrep.simxGetObjectChild(clientID,korpus,1,vrep.simx_opmode_blocking);
     [res,ultraT]=vrep.simxGetObjectChild(clientID,korpus,2,vrep.simx_opmode_blocking);
     
-    fid=fopen('Commands.txt','r');
+    fid=fopen(commandFile,'r');
     
     while 1
         
         frewind(fid);
-        speeds=fscanf(fid,'%f\t%f\t%f\n%d');
+        speeds=fscanf(fid,'%f\t%f\t%f\n%d')
         
         if(speeds(4)==0)
             [res]=vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot);
@@ -72,9 +78,9 @@ if (clientID>-1)
             r=0.15;
             %%pause(1);
             while 1
-                %%disp(i);
+                %%disp(i);i
                 frewind(fid);
-                speeds=fscanf(fid,'%f\t%f\t%f\n%d');
+                speeds=fscanf(fid,'%f\t%f\t%f\n%d')
                 
                 if(speeds(4)==1)
                     [res]=vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot);
@@ -97,7 +103,7 @@ if (clientID>-1)
                 [res,bP,ptP,~,~]=vrep.simxReadProximitySensor(clientID,ultraP,vrep.simx_opmode_buffer);
                 [res,bT,ptT,~,~]=vrep.simxReadProximitySensor(clientID,ultraT,vrep.simx_opmode_buffer);
                 
-                fidout=fopen('Output.txt','w');
+                fidout=fopen(outputFile,'w');
                 
                 if(fidout~=-1)
                     fprintf(fidout,'pos+ori:\t%f\t%f\t%f\n',position(1),position(2),orientation(3));
