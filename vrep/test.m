@@ -6,10 +6,10 @@ clear variables
 clc
 
 %% DP: Dodałem ścieżkę do pliku jako zmienną, na linuhu nie banglało
-% commandFile = '/Commands.txt'   % For linux
-% outputFile = '/Output.txt'      % For linux
-commandFile = 'Commands.txt'   % For Windows
-outputFile = 'Output.txt'       % For Windows
+commandFile = '/Commands.txt'   % For linux
+outputFile = '/Output.txt'      % For linux
+% commandFile = 'Commands.txt'   % For Windows
+% outputFile = 'Output.txt'       % For Windows
 
 %%                                                                      %DP- Ścieżka moja
 addpath('vrepPort');                                                    %/home/damian/git-repos/symulator-mini-rysi/vrep
@@ -32,12 +32,13 @@ if (clientID>-1)
     [res,ultraP]=vrep.simxGetObjectChild(clientID,korpus,1,vrep.simx_opmode_blocking);
     [res,ultraT]=vrep.simxGetObjectChild(clientID,korpus,2,vrep.simx_opmode_blocking);
     
-    fid=fopen(commandFile,'r');
     
     while 1
-        
-        frewind(fid);
-        speeds=fscanf(fid,'%f\t%f\t%f\n%d')
+    
+    % DP: Działanie ciągłe
+    fid=fopen(commandFile,'r');
+    speeds=fscanf(fid,'%f\t%f\t%f\n%d')
+    fclose(fid)
         
         if(speeds(4)==0)
             [res]=vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot);
@@ -79,8 +80,12 @@ if (clientID>-1)
             %%pause(1);
             while 1
                 %%disp(i);i
+                
+                % DP: Działanie ciągłe
+                fid=fopen(commandFile,'r');
                 frewind(fid);
                 speeds=fscanf(fid,'%f\t%f\t%f\n%d')
+                fclose(fid)
                 
                 if(speeds(4)==1)
                     [res]=vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot);
