@@ -4,22 +4,6 @@
 
 extern std::string ControlFile;  // Zmienna z plikiem --> Do ustawienia w main()
 
-/*
- *
- */
-namespace simulator {
-
-  struct paramsToFile{
-    std::string left;     //Velocity of left wheel
-    std::string right;    //Velocity of right wheel
-    std::string angle;    //angle of robot position
-    std::string run;      //start simulation = 0; stop simulation = 1
-  };
-
-  void saveControlFile(simulator::paramsToFile *RobotStruct);
-}
-extern simulator::paramsToFile paramsOfRobot;
-
 namespace irys {
 
 const std::size_t STATUS_TEXT_MESSAGE_LENGTH = 31;
