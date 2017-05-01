@@ -5,22 +5,33 @@
 #include <fstream>
 #include <sstream>
 
+#include "robotsimswarmapibody.h"
+
+//Struktura pomocnicza
+/// TODO trzeba zrobić porządek w plikach
+struct paramsToFile{
+  std::string left;     //Velocity of left wheel
+  std::string right;    //Velocity of right wheel
+  std::string angle;    //angle of robot position
+  std::string run;      //start simulation = 0; stop simulation = 1
+};
+
 class robot
 {
 private:
-  struct paramsToFile{
-    std::string left;     //Velocity of left wheel
-    std::string right;    //Velocity of right wheel
-    std::string angle;    //angle of robot position
-    std::string run;      //start simulation = 0; stop simulation = 1
-  };
   std::string ControlFile;
-  std::string PathToFile;
+  std::string OutputFile;
   paramsToFile paramsOfRobot;
-public:
+  irys::RobotStatus RobotStat;
   void saveControlFile();
+  void readOutputFile();
 public:
-  robot(std::string &controlFile);
+  float* getAbsolutePosition();
+  int getDistance(int sensornumber);
+  void setSpeed(int left, int right);
+  void standUp();
+  void layDown();
+  robot(std::string &controlFile,std::string &OutputLocation);
 };
 
 #endif // ROBOT_H

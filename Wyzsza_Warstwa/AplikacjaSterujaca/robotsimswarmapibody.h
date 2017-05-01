@@ -26,11 +26,11 @@ struct RobotStatus {
     char textMessage[STATUS_TEXT_MESSAGE_LENGTH];  /// additional message
 };
 
-int getDistance(int sensornumber); // 3 czujniki tak jak w robicie zakres 0 - 300 mm 1-przód, 2-tył, 3-góra
-void standUp(); // to chyba jasne
-void layDown(); // to też
-void setSpeed(int left, int right); // jednak zostaniemy przy zadawanu prędkości na silniki od -1000 do 1000
-float* getAbsolutePosition(); // tak jak się umawialiśmy
+//int getDistance(int sensornumber); // 3 czujniki tak jak w robicie zakres 0 - 300 mm 1-przód, 2-tył, 3-góra
+//void standUp(); // to chyba jasne
+//void layDown(); // to też
+//void setSpeed(int left, int right); // jednak zostaniemy przy zadawanu prędkości na silniki od -1000 do 1000
+//float* getAbsolutePosition(); // tak jak się umawialiśmy
 
 // funkcje operujące na mapie jak i sposób jej reprezanetacji pozostawiam wam do okreslenia
 
