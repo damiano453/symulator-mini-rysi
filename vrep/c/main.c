@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <math.h>
 #include <conio.h>
 #include <Windows.h>
@@ -12,6 +13,8 @@
 #define MODELPATH "E:/Robot.ttm"
 #define RADIUS 0.15
 #define SPACESIZE 3
+#define SHAPEMINID 2
+#define MOVEDISTANCE 0.05
 
 /* run this program using the console pauser or add your own getch, system("pause") or input loop */
 
@@ -19,7 +22,20 @@ float norm(float* vector);
 
 int main(int argc, char *argv[])
 {
-	simxFinish(-1);
+	float spawn[2];
+	int robotid;
+
+	if (argc==1) {
+		printf("Brak argumentow wywolania. Uzywane dane domyslne\n");
+		spawn[0]=0;
+		spawn[1]=0;
+		robotid=0;
+	} else if (argc==4) {
+		sscanf(argv[1],"%d",&robotid);
+		sscanf(argv[2],"%f",spawn);
+		sscanf(argv[3],"%f",spawn+1);
+	}
+	//simxFinish(-1);
 	int cid=simxStart("127.0.0.1",19997,true,true,5000,5);
 
 	if(cid>-1) {
@@ -44,8 +60,19 @@ int main(int argc, char *argv[])
 		simxGetObjectChild(cid,korpus,1,&ultraP,simx_opmode_blocking);
 		simxGetObjectChild(cid,korpus,2,&ultraT,simx_opmode_blocking);
 
-		char commandfilename[]="Commands.txt";
-		char outputfilename[]="Output.txt";
+		char suffix[]=".txt";
+		char robotnumbertext[4];
+		
+		sprintf(robotnumbertext,"%d",robotid);
+
+		char commandfilename[255]="Commands";
+		char outputfilename[255]="Output";
+		
+		strcat(commandfilename,robotnumbertext);
+		strcat(outputfilename,robotnumbertext);
+		
+		strcat(commandfilename,suffix);
+		strcat(outputfilename,suffix);
 
 		FILE *commandfile,*outputfile;
 		commandfile=fopen(commandfilename,"r");
@@ -55,7 +82,12 @@ int main(int argc, char *argv[])
 		float orientation[]= {0.0,M_PI/2,0.0};
 		float tilt[]= {0.0,0.0,0.0};
 
+		simxGetObjectPosition(cid,robotcsys,-1,position,simx_opmode_blocking);
+		position[0]=spawn[0];
+		position[1]=spawn[1];
+		simxSetObjectPosition(cid,robotcsys,-1,position,simx_opmode_blocking);
 		simxGetObjectPosition(cid,robotcsys,-1,position,simx_opmode_streaming);
+
 		simxGetObjectOrientation(cid,robotcsys,-1,orientation,simx_opmode_streaming);
 		simxGetObjectOrientation(cid,robot,robotcsys,tilt,simx_opmode_streaming);
 
@@ -119,18 +151,42 @@ int main(int argc, char *argv[])
 			simxSetObjectOrientation(cid,robot,robotcsys,&tilt[0],simx_opmode_oneshot);
 
 			char bG,bP,bT; //binarnie
-			float pG[3],pP[3],pT[3]; //namierzone punkty
+			//int hG,hP,hT; //wskaŸniki na namierzone obiekty
+			float pG[SPACESIZE],pP[SPACESIZE],pT[SPACESIZE]; //namierzone punkty
+			//float normalG[SPACESIZE],normalP[SPACESIZE],normalT[SPACESIZE]; //normalne namierzonych powierzchni
 
 			//Percepcja robota
 			simxReadProximitySensor(cid,ultraG,&bG,pG,NULL,NULL,simx_opmode_buffer);
 			simxReadProximitySensor(cid,ultraP,&bP,pP,NULL,NULL,simx_opmode_buffer);
 			simxReadProximitySensor(cid,ultraT,&bT,pT,NULL,NULL,simx_opmode_buffer);
 
+			//float temppos[3];
+
+			/*if (bG&&hG>=SHAPEMINID&&norm(pG)<=MOVEDISTANCE) {
+				simxGetObjectPosition(cid,hG,-1,temppos,simx_opmode_blocking);
+				temppos[0]+=cos(orientation[2])*v*dt;//*normalG[0];
+				temppos[1]+=sin(orientation[2])*v*dt;//*normalG[1];
+				simxSetObjectPosition(cid,hG,-1,temppos,simx_opmode_oneshot);
+			}
+			if (bT&&hT>=SHAPEMINID&&norm(pT)<=MOVEDISTANCE) {
+				simxGetObjectPosition(cid,hT,-1,temppos,simx_opmode_blocking);
+				temppos[0]+=cos(orientation[2])*v*dt;//*normalT[0];
+				temppos[1]+=sin(orientation[2])*v*dt;//*normalT[1];
+				simxSetObjectPosition(cid,hT,-1,temppos,simx_opmode_oneshot);
+			}
+			if (bP&&hP>=SHAPEMINID&&norm(pP)<=MOVEDISTANCE) {
+				simxGetObjectPosition(cid,hP,-1,temppos,simx_opmode_blocking);
+				temppos[0]+=cos(orientation[2])*v*dt;//*normalP[0];
+				temppos[1]+=sin(orientation[2])*v*dt;//*normalP[1];
+				simxSetObjectPosition(cid,hP,-1,temppos,simx_opmode_oneshot);
+			}*/
+
 			//Zapis pomiarów
 			rewind(outputfile);
 			fprintf(outputfile,"pos+ori:\t%f\t%f\t%f\n",position[0],position[1],orientation[2]);
 			fprintf(outputfile,"prox:\t%f\t%f\t%f\n",norm(pP),norm(pG),norm(pT));
 			fprintf(outputfile,"valid:\t%d\t%d\t%d\n",bP,bG,bT);
+			//fprintf(outputfile,"objs:\t%d\t%d\t%d\n",hP,hG,hT);
 			fflush(outputfile);
 
 			extApi_sleepMs(dt*1000);
@@ -138,6 +194,7 @@ int main(int argc, char *argv[])
 
 		fclose(commandfile);
 		fclose(outputfile);
+		simxFinish(cid);
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Nie mozna nawiazac polaczenia z VREPem :(\n");
