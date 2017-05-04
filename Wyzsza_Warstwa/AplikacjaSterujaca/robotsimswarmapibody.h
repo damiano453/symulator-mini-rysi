@@ -1,6 +1,11 @@
 #ifndef ROBOTSIMSWARMAPIBODY_H
 #define ROBOTSIMSWARMAPIBODY_H
 #include <string>
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif // win32
 
 namespace irys {
 
@@ -23,6 +28,8 @@ struct RobotStatus {
     bool busy;              /// tells whether the robot is performing some task
     char textMessage[STATUS_TEXT_MESSAGE_LENGTH];  /// additional message
 };
+
+void sleepcp(int milliseconds);
 
 //int getDistance(int sensornumber); // 3 czujniki tak jak w robicie zakres 0 - 300 mm 1-przód, 2-tył, 3-góra
 //void standUp(); // to chyba jasne

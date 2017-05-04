@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 //      getchar();
 //    }
   robocik.stopSimulation(0);//start
-  usleep(900000); //500ms
+  irys::sleepcp(50); //500ms
   cout<< robocik.goStraight(3)<<endl;
   //robocik.stopSimulation(1);//start
   return 0;

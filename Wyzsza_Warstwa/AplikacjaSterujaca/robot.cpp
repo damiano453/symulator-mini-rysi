@@ -110,7 +110,7 @@ float robot::goStraight(int numberOfBlocks)
       setSpeed(u,u);
       std::cout <<"u = "<< u<<std::endl<<"ek = "<<ek_0<<std::endl<<std::endl;
       //std::getchar();
-      usleep(50000); //50ms
+      irys::sleepcp(50); //50ms
     } while (ek_0!=0);
   setSpeed(0,0);
     //  } while (i<=100000);

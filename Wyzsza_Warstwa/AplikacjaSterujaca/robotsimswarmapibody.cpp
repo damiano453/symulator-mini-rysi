@@ -3,6 +3,14 @@
 #include <fstream>
 #include <sstream>
 
+void irys::sleepcp(int milliseconds) // cross-platform sleep function
+{
+    #ifdef WIN32
+    Sleep(milliseconds);
+    #else
+    usleep(milliseconds * 1000); ///conversion na ms
+    #endif // win32
+}
 
 /*
  * Set speed; Uses method of communication
