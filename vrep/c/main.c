@@ -10,7 +10,7 @@
 #include "extApiPlatform.h"
 #include "extApiInternal.h"
 
-#define MODELPATH "E:/Robot.ttm"
+#define MODELPATH "/home/damian/git-repos/symulator-mini-rysi/vrep/Robot.ttm"
 #define RADIUS 0.15
 #define SPACESIZE 3
 #define SHAPEMINID 2

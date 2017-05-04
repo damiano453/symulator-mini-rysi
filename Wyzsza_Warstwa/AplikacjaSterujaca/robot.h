@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 
 #include "robotsimswarmapibody.h"
 
@@ -19,6 +20,7 @@ struct paramsToFile{
 class robot
 {
 private:
+  float pi;
   std::string ControlFile;
   std::string OutputFile;
   paramsToFile paramsOfRobot;
@@ -26,9 +28,15 @@ private:
   void saveControlFile();
   void readOutputFile();
 public:
+  float goStraight(int numberOfBlocks);
+  // start symulacji
+  void stopSimulation(int stop);    ///0 - start;  1 - stop.
+  //informacje do sterowania ||*(&)->x || *(&+1)->y
   float* getAbsolutePosition();
+  //informacje i kontrola
   int getDistance(int sensornumber);
   void setSpeed(int left, int right);
+  //kładzie i wstaje
   void standUp();
   void layDown();
   robot(std::string &controlFile,std::string &OutputLocation);

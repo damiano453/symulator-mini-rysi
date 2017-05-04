@@ -7,7 +7,7 @@ clc
 
 %% DP: Dodałem ścieżkę do pliku jako zmienną, na linuhu nie banglało
 commandFile = '/Commands.txt'   % For linux
-outputFile = '/Output.txt'      % For linux
+outputFile = 'Output.txt'      % For linux
 % commandFile = 'Commands.txt'   % For Windows
 % outputFile = 'Output.txt'       % For Windows
 
@@ -21,7 +21,7 @@ clientID=vrep.simxStart('127.0.0.1',19997,true,true,5000,5);
 %%
 if (clientID>-1)
     disp('Connected to remote API server');
-    
+ 
     [res,csyshandle]=vrep.simxLoadModel(clientID,modelpath,0,vrep.simx_opmode_blocking);
     %%[res,~,~,~,stringData]=vrep.simxGetObjectGroupData(clientID,vrep.sim_object_shape_type,0,vrep.simx_opmode_blocking);
     %[res,robothandle]=vrep.simxGetObjectHandle(clientID,'Robot1',vrep.simx_opmode_blocking);
@@ -31,6 +31,7 @@ if (clientID>-1)
     [res,ultraG]=vrep.simxGetObjectChild(clientID,korpus,0,vrep.simx_opmode_blocking);
     [res,ultraP]=vrep.simxGetObjectChild(clientID,korpus,1,vrep.simx_opmode_blocking);
     [res,ultraT]=vrep.simxGetObjectChild(clientID,korpus,2,vrep.simx_opmode_blocking);
+
     
     
     while 1
@@ -78,14 +79,34 @@ if (clientID>-1)
             
             r=0.15;
             %%pause(1);
+            i =0;
+            j = 0;
+            [fidout,msg]=fopen(outputFile,'w');
+                
+            if(fidout~=-1)
+                fprintf(fidout,'pos+ori:\t%f\t%f\t%f\n',position(1),position(2),orientation(3));
+                fprintf(fidout,'prox:\t%f\t%f\t%f\n',0,0,0);
+                fprintf(fidout,'valid:\t%d\t%d\t%d\n',0,0,0);
+            end
+            fclose(fidout);
             while 1
+                j = j+1
                 %%disp(i);i
                 
                 % DP: Działanie ciągłe
-                fid=fopen(commandFile,'r');
+                [fid,msg]=fopen(commandFile,'r');
                 frewind(fid);
-                speeds=fscanf(fid,'%f\t%f\t%f\n%d')
-                fclose(fid)
+                speeds=fscanf(fid,'%f\t%f\t%f\n%d');
+                fclose(fid);
+
+                if (length(speeds) ~= 4)
+                    speeds = speeds_1;
+                else
+                    i = i+1
+                    speeds_1 = speeds;
+                end
+                
+                
                 
                 if(speeds(4)==1)
                     [res]=vrep.simxStopSimulation(clientID,vrep.simx_opmode_oneshot);
@@ -108,14 +129,14 @@ if (clientID>-1)
                 [res,bP,ptP,~,~]=vrep.simxReadProximitySensor(clientID,ultraP,vrep.simx_opmode_buffer);
                 [res,bT,ptT,~,~]=vrep.simxReadProximitySensor(clientID,ultraT,vrep.simx_opmode_buffer);
                 
-                fidout=fopen(outputFile,'w');
+                [fidout,msg]=fopen(outputFile,'w');
                 
                 if(fidout~=-1)
                     fprintf(fidout,'pos+ori:\t%f\t%f\t%f\n',position(1),position(2),orientation(3));
                     fprintf(fidout,'prox:\t%f\t%f\t%f\n',norm(ptP),norm(ptG),norm(ptT));
                     fprintf(fidout,'valid:\t%d\t%d\t%d\n',bP,bG,bT);
-                    fclose(fidout);
                 end
+                fclose(fidout);
                 
                 pause(dt);
             end
