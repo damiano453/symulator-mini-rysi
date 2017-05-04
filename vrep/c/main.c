@@ -3,8 +3,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#include <conio.h>
-#include <Windows.h>
+//#include <conio.h>
+//#include <Windows.h>
+
+//#include <unistd.h>
 
 #include "extApi.h"
 #include "extApiPlatform.h"
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
 		else
 			exit(EXIT_FAILURE);
 
-		printf("Dowolny klawisz by zakonczyc!\n");
+		printf("Niezerowa komendaw pliku, by zakonczyc!\n");
 
 		int robot,korpus,ultraG,ultraP,ultraT;
 		simxGetObjectChild(cid,robotcsys,0,&robot,simx_opmode_blocking);
@@ -125,7 +127,7 @@ int main(int argc, char *argv[])
 			rewind(commandfile);
 			fscanf(commandfile,"%f\t%f\t%f\n%d",speeds,speeds+1,tilt+2,&cmd);
 
-			if(cmd!=0||kbhit()) {
+			if(cmd!=0/*||kbhit()*/) {
 				responseCode=simxStopSimulation(cid,simx_opmode_blocking);
 				printf("stop=%d\n",responseCode);
 				responseCode=simxRemoveModel(cid,robotcsys,simx_opmode_blocking);
