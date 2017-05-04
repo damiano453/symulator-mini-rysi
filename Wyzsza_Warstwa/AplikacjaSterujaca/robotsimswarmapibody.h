@@ -2,8 +2,6 @@
 #define ROBOTSIMSWARMAPIBODY_H
 #include <string>
 
-extern std::string ControlFile;  // Zmienna z plikiem --> Do ustawienia w main()
-
 namespace irys {
 
 const std::size_t STATUS_TEXT_MESSAGE_LENGTH = 31;
