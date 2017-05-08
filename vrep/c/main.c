@@ -5,6 +5,7 @@
 #include <math.h>
 //#include <conio.h>
 //#include <Windows.h>
+#include <pthread.h>
 
 //#include <unistd.h>
 

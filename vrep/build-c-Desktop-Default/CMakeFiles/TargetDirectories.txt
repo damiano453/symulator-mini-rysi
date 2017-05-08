@@ -1,0 +1,4 @@
+/home/damian/git-repos/symulator-mini-rysi/vrep/build-c-Desktop-Default/CMakeFiles/rebuild_cache.dir
+/home/damian/git-repos/symulator-mini-rysi/vrep/build-c-Desktop-Default/CMakeFiles/edit_cache.dir
+/home/damian/git-repos/symulator-mini-rysi/vrep/build-c-Desktop-Default/CMakeFiles/c.dir
+/home/damian/git-repos/symulator-mini-rysi/vrep/build-c-Desktop-Default/CMakeFiles/MATH.dir
