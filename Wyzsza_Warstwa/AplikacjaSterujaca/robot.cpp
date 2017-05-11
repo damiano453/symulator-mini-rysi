@@ -30,19 +30,108 @@ void robot::saveControlFile()
 }
 
 /*
+ * Obraca:
+ * 0 -> w prawo
+ * 1 -> w lewo
+ * 2 -> w tył
+ * TODO   czasem odwraca źle, ale zawsze do pozycji
+ */
+void robot::turn(int dir)
+{
+  int i=0;
+  ///PID params
+  float T = 0.05;
+  float K  = 2000;
+  float Td = 0;
+  float Ti = 1;//100000000000000000;
+
+  int ogr = 2000;
+
+  float Tv = 100000000000000000;
+
+  float r2 = 0.0;
+  float r1 = 0.0;
+  float r0 = 0.0;
+
+  float uk_1 =  0.0;
+  float ek_0 = 0.0;
+  float ek_1 = 0.0;
+  float ek_2 = 0.0;
+
+  float u = 0.0;
+  float up = 0.0;
+  float ui = 0.0;
+  float ui_1 =0.0;
+  float ud = 0.0;
+  float uw_1 = 0.0;
+  r2 = K*Td/T;
+  r1 = K*(T/2/Ti - 2*Td/T - 1);
+  r0 = K*(1+ T/2/Ti + Td/T);
+  ///PID params
+  int directionToGet = 0.0;
+  if(dir == 0)  dir = -1; // do algorytmu
+  directionToGet = dir*90;
+  readOutputFile();
+  directionToGet += RobotStat.orientation;
+  if(directionToGet >= 0)
+    directionToGet = directionToGet%360;
+  else
+    directionToGet = (360+directionToGet)%360;
+  std::cout << "direction = "<<directionToGet<<std::endl<<std::endl;
+  if(dir == 2)  dir = 1; // do algorytmu
+  do {
+      readOutputFile();
+      i++;
+      ek_2 = ek_1;
+      ek_1 = ek_0;
+      ek_0 = (directionToGet - RobotStat.orientation);
+      if (ek_0 < 0)
+          dir *= dir;
+
+      up = K* ek_0;
+      ud = K*Td*((ek_0-ek_1)/T);
+      ui = ui_1+K/Ti*T*((ek_1+ek_0)/2);
+
+
+      // anty windup
+      //ui= ui + T/Tv*(uw_1 - uk_1);
+
+      u = up + ui + ud;
+
+      ui_1 = ui;
+      u = r2*ek_2 + r1*ek_1 + r0*ek_0 + uk_1; // <-- tutaj algorytm regulacji
+      uk_1 = u;
+
+      //u windup
+      if (uk_1 > ogr) uw_1 = ogr;
+      else if (uk_1 < -ogr) uw_1 = -ogr;
+      else uw_1 = uk_1;
+
+      //only u
+      if (u > ogr) u = ogr;
+      else if (u < -ogr) u = -ogr;
+      else u = u;
+
+      setSpeed(-dir*u,dir*u);
+      irys::sleepcp(11); //5ms
+      std::cout<< std::endl<<std::endl<<"Uchyb = "<<ek_0<<std::endl<<"U = "<<u<<std::endl;
+    } while (ek_0!=0);
+  setSpeed(0,0);
+}
+
+/*
  * Jedzie do przodu o liczbę bloków
  */
-
 float robot::goStraight(int numberOfBlocks)
 {
   int i=0;
   ///PID params
   float T = 0.05;
-  float K  = 10000;
+  float K  = 1000;
   float Td = 0;
-  float Ti = 10000000000000;
+  float Ti = 1000000000000000000;
 
-  float Tv = 10000000000000;
+  float Tv = 1000000000000000000;
 
   float r2 = 0.0;
   float r1 = 0.0;
@@ -109,11 +198,12 @@ float robot::goStraight(int numberOfBlocks)
 
       setSpeed(u,u);
       std::cout <<"u = "<< u<<std::endl<<"ek = "<<ek_0<<std::endl<<std::endl;
-      //std::getchar();
-      irys::sleepcp(50); //50ms
+      irys::sleepcp(5); //5ms
     } while (ek_0!=0);
   setSpeed(0,0);
-    //  } while (i<=100000);
+  std::cout<<"direction = "<<position<<std::endl;
+  std::cout<<"control error = "<<ek_0<<std::endl;
+  std::cout<<"Position = "<<RobotStat.positionXYZ[position]<<std::endl;
 }
 
 /*
@@ -137,8 +227,8 @@ void robot::setSpeed(int left, int right)
   // To file
   std::stringstream value[2];
   std::string rowToSting;
-  value[0] << left/1000.0;
-  value[1] << right/1000.0;
+  value[0] << left/10000.0;
+  value[1] << right/10000.0;
 
   rowToSting = value[0].str();
   paramsOfRobot.left = rowToSting;
@@ -181,6 +271,7 @@ void robot::readOutputFile()
       file >> musiByc >> RobotStat.positionXYZ[0] >> RobotStat.positionXYZ[1] >> RobotStat.orientation;
       file >> musiByc >> RobotStat.sensorsData[0] >> RobotStat.sensorsData[1] >> RobotStat.sensorsData[2];
       file >> musiByc >> ifMeasure[0] >> ifMeasure[1] >> ifMeasure[2];
+      RobotStat.orientation = RobotStat.orientation*180/pi;
       if(ifMeasure[0] == 0)
         RobotStat.sensorsData[0] = 0;
       if(ifMeasure[1] == 0)

@@ -26,6 +26,10 @@
 //
 // This file was automatically created for V-REP release V3.3.2 on August 29th 2016
 
+
+#define NON_MATLAB_PARSING      //to dodalem DP
+
+
 #ifndef _EXTAPI__
 #define _EXTAPI__
 

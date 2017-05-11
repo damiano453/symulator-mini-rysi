@@ -25,6 +25,8 @@
 // -------------------------------------------------------------------
 //
 // This file was automatically created for V-REP release V3.3.2 on August 29th 2016
+#define MAX_EXT_API_CONNECTIONS 255   //to dodalem DP
+
 
 #ifndef _EXTAPIPLATFORM__
 #define _EXTAPIPLATFORM__

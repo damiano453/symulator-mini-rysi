@@ -31,6 +31,8 @@
 
 #include "extApiPlatform.h"
 
+#define NON_MATLAB_PARSING
+
 #define SIMX_INIT_BUFF_SIZE 500
 #define SIMX_MIN_BUFF_INCR 500
 
