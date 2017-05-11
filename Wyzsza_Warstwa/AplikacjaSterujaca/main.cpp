@@ -6,8 +6,8 @@
 
 using namespace std;
 
-string ControlFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/matlab/Commands.txt";
-string OutputFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/matlab/Output.txt";
+string ControlFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/c/Commands0.txt";
+string OutputFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/c/Output0.txt";
 
 int main(int argc, char *argv[])
 {

@@ -77,9 +77,7 @@ int main(int argc, char *argv[])
 		strcat(commandfilename,suffix);
 		strcat(outputfilename,suffix);
 
-		FILE *commandfile,*outputfile;
-		commandfile=fopen(commandfilename,"r");
-		outputfile=fopen(outputfilename,"wt");
+		FILE *commandfile,*outputfile; // Otwieram i zamykam w p?tli, bo nie dzia?a
 
 		float position[]= {0.0,0.0,0.0};
 		float orientation[]= {0.0,M_PI/2,0.0};
@@ -124,9 +122,9 @@ int main(int argc, char *argv[])
 			int cmd;
 
 			//Odczyt rozkazów
-
-			rewind(commandfile);
+			commandfile=fopen(commandfilename,"r");
 			fscanf(commandfile,"%f\t%f\t%f\n%d",speeds,speeds+1,tilt+2,&cmd);
+			fclose(commandfile);
 
 			if(cmd!=0/*||kbhit()*/) {
 				responseCode=simxStopSimulation(cid,simx_opmode_blocking);
@@ -185,18 +183,16 @@ int main(int argc, char *argv[])
 			}*/
 
 			//Zapis pomiarów
-			rewind(outputfile);
+			outputfile=fopen(outputfilename,"wt");
 			fprintf(outputfile,"pos+ori:\t%f\t%f\t%f\n",position[0],position[1],orientation[2]);
 			fprintf(outputfile,"prox:\t%f\t%f\t%f\n",norm(pP),norm(pG),norm(pT));
 			fprintf(outputfile,"valid:\t%d\t%d\t%d\n",bP,bG,bT);
 			//fprintf(outputfile,"objs:\t%d\t%d\t%d\n",hP,hG,hT);
-			fflush(outputfile);
+			fclose(outputfile);
 
 			extApi_sleepMs(dt*1000);
 		}
 
-		fclose(commandfile);
-		fclose(outputfile);
 		simxFinish(cid);
 		exit(EXIT_SUCCESS);
 	} else {

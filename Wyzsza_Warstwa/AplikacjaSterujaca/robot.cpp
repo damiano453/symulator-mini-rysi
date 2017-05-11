@@ -34,17 +34,20 @@ void robot::saveControlFile()
  * 0 -> w prawo
  * 1 -> w lewo
  * 2 -> w tył
+ * TODO   czasem odwraca źle, ale zawsze do pozycji
  */
 void robot::turn(int dir)
 {
   int i=0;
   ///PID params
   float T = 0.05;
-  float K  = 1400;
+  float K  = 2000;
   float Td = 0;
-  float Ti = 0.1;
+  float Ti = 1;//100000000000000000;
 
-  float Tv = 150;
+  int ogr = 2000;
+
+  float Tv = 100000000000000000;
 
   float r2 = 0.0;
   float r1 = 0.0;
@@ -65,11 +68,16 @@ void robot::turn(int dir)
   r1 = K*(T/2/Ti - 2*Td/T - 1);
   r0 = K*(1+ T/2/Ti + Td/T);
   ///PID params
-  float directionToGet = 0.0;
+  int directionToGet = 0.0;
   if(dir == 0)  dir = -1; // do algorytmu
-  directionToGet = dir*pi/2;
+  directionToGet = dir*90;
   readOutputFile();
   directionToGet += RobotStat.orientation;
+  if(directionToGet >= 0)
+    directionToGet = directionToGet%360;
+  else
+    directionToGet = (360+directionToGet)%360;
+  std::cout << "direction = "<<directionToGet<<std::endl<<std::endl;
   if(dir == 2)  dir = 1; // do algorytmu
   do {
       readOutputFile();
@@ -95,17 +103,17 @@ void robot::turn(int dir)
       uk_1 = u;
 
       //u windup
-      if (uk_1 > 1000) uw_1 = 1000;
-      else if (uk_1 < -1000) uw_1 = -1000;
+      if (uk_1 > ogr) uw_1 = ogr;
+      else if (uk_1 < -ogr) uw_1 = -ogr;
       else uw_1 = uk_1;
 
       //only u
-      if (u > 1000) u = 1000;
-      else if (u < -1000) u = -1000;
+      if (u > ogr) u = ogr;
+      else if (u < -ogr) u = -ogr;
       else u = u;
 
       setSpeed(-dir*u,dir*u);
-      irys::sleepcp(30); //5ms
+      irys::sleepcp(11); //5ms
       std::cout<< std::endl<<std::endl<<"Uchyb = "<<ek_0<<std::endl<<"U = "<<u<<std::endl;
     } while (ek_0!=0);
   setSpeed(0,0);
@@ -119,11 +127,11 @@ float robot::goStraight(int numberOfBlocks)
   int i=0;
   ///PID params
   float T = 0.05;
-  float K  = 4000;
+  float K  = 1000;
   float Td = 0;
-  float Ti = 1.1;
+  float Ti = 1000000000000000000;
 
-  float Tv = 0.2;
+  float Tv = 1000000000000000000;
 
   float r2 = 0.0;
   float r1 = 0.0;
@@ -263,6 +271,7 @@ void robot::readOutputFile()
       file >> musiByc >> RobotStat.positionXYZ[0] >> RobotStat.positionXYZ[1] >> RobotStat.orientation;
       file >> musiByc >> RobotStat.sensorsData[0] >> RobotStat.sensorsData[1] >> RobotStat.sensorsData[2];
       file >> musiByc >> ifMeasure[0] >> ifMeasure[1] >> ifMeasure[2];
+      RobotStat.orientation = RobotStat.orientation*180/pi;
       if(ifMeasure[0] == 0)
         RobotStat.sensorsData[0] = 0;
       if(ifMeasure[1] == 0)
