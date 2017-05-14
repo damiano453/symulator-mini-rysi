@@ -23,7 +23,6 @@ void robot::saveControlFile()
   if (file.is_open())
   {
       file << paramsOfRobot.left <<"\t"<< paramsOfRobot.right <<"\t"<< paramsOfRobot.angle <<std::endl<< paramsOfRobot.run <<std::endl;
-      std::cout << paramsOfRobot.left <<"\t"<< paramsOfRobot.right <<"\t"<< paramsOfRobot.angle <<std::endl<< paramsOfRobot.run <<std::endl;
       file.close();
   }
   else std::cout << "Unable to open file";
@@ -38,16 +37,13 @@ void robot::saveControlFile()
  */
 void robot::turn(int dir)
 {
-  int i=0;
-  ///PID params
+  ///PID var
   float T = 0.05;
-  float K  = 50;//4;
+  float K  = 50;
   float Td = 0;
-  float Ti = 450;//2600;//100000000000000000;     2500
+  float Ti = 450;
 
   int ogr = 6000;
-
-  float Tv = 100000000000000000;//12000;
 
   float r2 = 0.0;
   float r1 = 0.0;
@@ -63,11 +59,12 @@ void robot::turn(int dir)
   float ui = 0.0;
   float ui_1 =0.0;
   float ud = 0.0;
-  float uw_1 = 0.0;
+  ///PID params
   r2 = K*Td/T;
   r1 = K*(T/2/Ti - 2*Td/T - 1);
   r0 = K*(1+ T/2/Ti + Td/T);
-  ///PID params
+
+  //Find Position
   int directionToGet = 0.0;
   if(dir == 0)  dir = -1; // do algorytmu
   directionToGet = dir*90;
@@ -83,47 +80,35 @@ void robot::turn(int dir)
   else
     directionToGet = (360+directionToGet)%360;
   if(dir == 2)
-    dir = 1; // do algorytmu
+    dir = 1; // to algorithm
+  // PID control
   do {
-      readOutputFile();
-      i++;
       ek_2 = ek_1;
       ek_1 = ek_0;
+      readOutputFile();
       ek_0 = (dir*directionToGet - dir*RobotStat.orientation);
-      if (ek_0 < 0 && i ==1)
-          dir *= -1;
 
       up = K* ek_0;
       ud = K*Td*((ek_0-ek_1)/T);
       ui = ui_1+K/Ti*T*((ek_1+ek_0)/2);
 
-
-      // anty windup
-      //ui= ui + T/Tv*(uw_1 - uk_1);
-
       u = up + ui + ud;
 
+      // PID alg
       ui_1 = ui;
       u = r2*ek_2 + r1*ek_1 + r0*ek_0 + uk_1; // <-- tutaj algorytm regulacji
       uk_1 = u;
 
-      //u windup
-      if (uk_1 > ogr) uw_1 = ogr;
-      else if (uk_1 < -ogr) uw_1 = -ogr;
-      else uw_1 = uk_1;
-
-      //only u
+      // limits
       if (u > ogr) u = ogr;
       else if (u < -ogr) u = -ogr;
       else u = u;
 
+      //to Robot
       setSpeed(-dir*u,dir*u);
       irys::sleepcp(45); //5ms
-      std::cout<< std::endl<<std::endl<<"Uchyb = "<<ek_0<<std::endl<<"U = "<<u<<std::endl<<"PosToGet = "<<directionToGet<<std::endl;
-    } while (abs(ek_0*100)>=4);
+    } while (abs(ek_0*10)>=1);
   setSpeed(0,0);
-  readOutputFile();
-  std::cout<<"Orientation = "<<RobotStat.orientation<<"   ENDEND\n";
 }
 
 /*
@@ -131,17 +116,14 @@ void robot::turn(int dir)
  */
 float robot::goStraight(int numberOfBlocks)
 {
-  int i=0;
   int mul= 0;
-  ///PID params
+  ///PID var
   float T = 0.05;
-  float K  = 20000;
+  float K  = 22000;
   float Td = 0;
-  float Ti = 100;
+  float Ti = 110;
 
   int ogr = 2000;
-
-  float Tv = 1000000000000000000;
 
   float r2 = 0.0;
   float r1 = 0.0;
@@ -157,87 +139,79 @@ float robot::goStraight(int numberOfBlocks)
   float ui = 0.0;
   float ui_1 =0.0;
   float ud = 0.0;
-  float uw_1 = 0.0;
+
+  //PID params
   r2 = K*Td/T;
   r1 = K*(T/2/Ti - 2*Td/T - 1);
   r0 = K*(1+ T/2/Ti + Td/T);
-  ///PID params
+
+  /// position to get
   float distanceToGet = 0.0;
+  float posXY = 0;
   int position;
+  int cases = 10;
   readOutputFile();
   distanceToGet = 0.5*numberOfBlocks;
-  //std::cout<<"to get = "<<abs(180-(int(RobotStat.orientation)%180))<<std::endl;
-  if(180-abs(int(RobotStat.orientation))<=2){         //jedź, gdy w okolica 180 stopni
+  if(abs(180-abs(int(RobotStat.orientation)))<=2){
       position = 0;
       distanceToGet *= -1;
       mul = -1;
+      cases = 0;
     }
-  else if(360-abs(int(RobotStat.orientation))<=2){    //jedź, gdy w okolica 0 stopni
+  else if(abs(360-abs(int(RobotStat.orientation)))<=2){
       position = 0;
       mul = 1;
+      cases = 1;
     }
-  else if(abs(int(RobotStat.orientation))<=2){        //jedź, gdy w okolica 0 stopni
+  else if(abs(int(RobotStat.orientation))<=2){
       position = 0;
       mul = 1;
+      cases = 2;
     }
-  else if(270-abs(int(RobotStat.orientation))<=2){    //jedź, gdy w okolica 270 stopni
+  else if(abs(270-abs(int(RobotStat.orientation)))<=2){
       position = 1;
       distanceToGet *= -1;
       mul = -1;
+      cases = 3;
     }
-  else if(90-abs(int(RobotStat.orientation))<=2){     //jedź, gdy w okolica 90 stopni
+  else if(abs(90-abs(int(RobotStat.orientation)))<=2){
       position = 1;
       mul = 1;
+      cases = 4;
     }
-  distanceToGet += RobotStat.positionXYZ[position];
-  std::cout<<"\n\nto get = "<<distanceToGet<<std::endl;
-  //pause();
-  do {
-      std::cout<<"direction = "<<position<<std::endl;
+  if(int(RobotStat.positionXYZ[position]*10/5*10)%10 >= 6){
+          posXY = (int(RobotStat.positionXYZ[position]*10/5)+1)*0.5;
+    }
+  else    posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5;
+  distanceToGet += posXY;
 
-      std::cout<<"Position = "<<RobotStat.positionXYZ[position]<<std::endl;
-      readOutputFile();
-      i++;
+  // PID control
+  do {
       ek_2 = ek_1;
       ek_1 = ek_0;
-      ek_0 = (distanceToGet - mul*RobotStat.positionXYZ[position]);
+      readOutputFile();
+      ek_0 = (distanceToGet - RobotStat.positionXYZ[position]);
 
-      std::cout<<"control error = "<<ek_0<<std::endl;
- pause();
       up = K* ek_0;
       ud = K*Td*((ek_0-ek_1)/T);
       ui = ui_1+K/Ti*T*((ek_1+ek_0)/2);
 
-
-      // anty windup
-      //ui= ui + T/Tv*(uw_1 - uk_1);
-
       u = up + ui + ud;
 
+      //PID algorithm
       ui_1 = ui;
-      u = r2*ek_2 + r1*ek_1 + r0*ek_0 + uk_1; // <-- tutaj algorytm regulacji
+      u = r2*ek_2 + r1*ek_1 + r0*ek_0 + uk_1;
       uk_1 = u;
-      //u windup
-      if (uk_1 > ogr) uw_1 = ogr;
-      else if (uk_1 < -ogr) uw_1 = -ogr;
-      else uw_1 = uk_1;
 
-      //only u
+      // limits oof control val
       if (u > ogr) u = ogr;
       else if (u < -ogr) u = -ogr;
       else u = u;
 
-      setSpeed(u,u);
-      std::cout <<"u = "<< u<<std::endl<<"ek = "<<ek_0<<std::endl<<std::endl;
-      irys::sleepcp(10); //5ms
-    //  setSpeed(0,0);
-    //  pause();
-    } while (abs(ek_0*100000)>=1);
+      setSpeed(mul*u,mul*u);
+      irys::sleepcp(45); //5ms
+    } while (abs(ek_0*100)>=1);
   setSpeed(0,0);
-  readOutputFile();
-  std::cout<<"direction = "<<position<<std::endl;
-  std::cout<<"control error = "<<ek_0<<std::endl;
-  std::cout<<"Position = "<<RobotStat.positionXYZ[position]<<std::endl;
 }
 
 /*

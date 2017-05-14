@@ -6,6 +6,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <cstdlib>
+#include <cmath>
 
 
 #include "robotsimswarmapibody.h"
@@ -21,6 +22,8 @@ struct paramsToFile{
   std::string run;      //start simulation = 0; stop simulation = 1
 };
 
+enum direction {prawo=0, lewo=1, back=2};
+
 class robot
 {
 private:
@@ -32,7 +35,7 @@ private:
   void saveControlFile();
   void readOutputFile();
 public:
-  // obroc 0-> w prawo; 1 ->w lewo; 2 -> w tył
+  // obroc: patrz enum direction
   void turn(int dir);
   // jedź o numberOfBlock do przodu
   float goStraight(int numberOfBlocks);
