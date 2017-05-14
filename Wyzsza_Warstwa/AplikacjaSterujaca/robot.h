@@ -37,8 +37,14 @@ private:
 public:
   // obroc: patrz enum direction
   void turn(int dir);
-  // jedź o numberOfBlock do przodu
-  float goStraight(int numberOfBlocks);
+  // jedź o numberOfBlock do przodu, drugi parametr zawsze 0 !!
+  float goStraight(int numberOfBlocks, int length);   //0 jedź o cały; 1 jedź o pół; 2 jedź do klocka
+  // jedź do środka klocka
+  void goMiddle(void);
+  // go to obstacle (when lying)
+  void goToObstacle(void);
+  // go from Obstacle (when lying)
+  void goFromObstacle(void);
   // start symulacji
   void stopSimulation(int stop);    ///0 - start;  1 - stop.
   //informacje do sterowania ||*(&)->x || *(&+1)->y
@@ -50,7 +56,7 @@ public:
   //kładzie i wstaje
   void standUp();
   void layDown();
-  robot(std::string &controlFile,std::string &OutputLocation);
+  robot(std::string &pathToFile,int robotID);
 };
 
 #endif // ROBOT_H

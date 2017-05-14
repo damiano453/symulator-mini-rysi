@@ -2,15 +2,19 @@
 /*
  * konstruktur, inicjalizacja -> robot nie rusza się, symulacja stop
  */
-robot::robot(std::string &ControlLocation,std::string &OutputLocation)
+robot::robot(std::string &pathToFile,int robotID)
 {
-  ControlFile = ControlLocation;    // location of control file
-  OutputFile = OutputLocation;      // location of Output file
+  std::ostringstream ID;
+  ID << robotID;
+  ControlFile = pathToFile+std::string("Commands")+ID.str()+std::string(".txt");    // location of control file
+  OutputFile = pathToFile+std::string("Output")+ID.str()+std::string(".txt");      // location of Output file
+  std::cout << ControlFile<<std::endl;
   paramsOfRobot.angle = "0";        // angle of robot
   paramsOfRobot.left = "0";         // velocity of left wheel
   paramsOfRobot.right = "0";        // velocity of right wheel
   paramsOfRobot.run = "1";          // stop simulation
   pi = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
+  this->saveControlFile();
 }
 
 /*
@@ -114,7 +118,7 @@ void robot::turn(int dir)
 /*
  * Jedzie do przodu o liczbę bloków
  */
-float robot::goStraight(int numberOfBlocks)
+float robot::goStraight(int numberOfBlocks, int length)
 {
   int mul= 0;
   ///PID var
@@ -149,40 +153,84 @@ float robot::goStraight(int numberOfBlocks)
   float distanceToGet = 0.0;
   float posXY = 0;
   int position;
-  int cases = 10;
   readOutputFile();
-  distanceToGet = 0.5*numberOfBlocks;
+  if (length == 0)
+    distanceToGet = 0.5*numberOfBlocks;
+  else if (length == 1)
+    distanceToGet = 0.25;
+  else if (length == 2)
+    distanceToGet = 0.05;
+  else if (length == 3)
+    distanceToGet = -0.05;
+  else length = 0;
+
   if(abs(180-abs(int(RobotStat.orientation)))<=2){
       position = 0;
-      distanceToGet *= -1;
+      if (length != 3)
+        distanceToGet *= -1;
       mul = -1;
-      cases = 0;
     }
   else if(abs(360-abs(int(RobotStat.orientation)))<=2){
       position = 0;
       mul = 1;
-      cases = 1;
     }
   else if(abs(int(RobotStat.orientation))<=2){
       position = 0;
       mul = 1;
-      cases = 2;
     }
   else if(abs(270-abs(int(RobotStat.orientation)))<=2){
       position = 1;
-      distanceToGet *= -1;
+      if (length != 3)
+        distanceToGet *= -1;
       mul = -1;
-      cases = 3;
     }
   else if(abs(90-abs(int(RobotStat.orientation)))<=2){
       position = 1;
       mul = 1;
-      cases = 4;
     }
-  if(int(RobotStat.positionXYZ[position]*10/5*10)%10 >= 6){
-          posXY = (int(RobotStat.positionXYZ[position]*10/5)+1)*0.5;
+  std::cout << "Yzad = "<<distanceToGet <<std::endl;
+  switch (length) {
+    case 0:     // incrementing 0.5 from 0.25
+      if(int((RobotStat.positionXYZ[position]-0.25)*10/5*10)%10 >= 6){
+              posXY = (int(RobotStat.positionXYZ[position]*10/5)+1)*0.5+0.25;
+        }
+      else    posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5+0.25;
+      break;
+    case 1:     // 0.25 from the beginning of square
+      posXY = 0;
+      break;
+    case 2:     // 0.3 position from beggining of square
+      if(int((RobotStat.positionXYZ[position]-0.25)*10/5*10)%10 >= 6){
+          if(RobotStat.positionXYZ[position]>=0)
+              posXY = (int(RobotStat.positionXYZ[position]*10/5)+1)*0.5+0.25;
+          else
+              posXY = (int(RobotStat.positionXYZ[position]*10/5)-1)*0.5-0.25;
+        }
+      else{
+          if(RobotStat.positionXYZ[position]>=0)
+              posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5+0.25;
+          else
+              posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5-0.25;
+      }
+      ogr = 200;
+      std::cout<<"jestemTu"<<std::endl;
+      break;
+    case 3:     // 0.3 position from beggining of square
+      if(int((RobotStat.positionXYZ[position]-0.25)*10/5*10)%10 >= 6){
+          if(RobotStat.positionXYZ[position]>=0)
+              posXY = (int(RobotStat.positionXYZ[position]*10/5)+mul*1)*0.5+0.3;
+          else
+              posXY = (int(RobotStat.positionXYZ[position]*10/5)-mul*1)*0.5-0.2;
+        }
+      else {
+          if(RobotStat.positionXYZ[position]>=0)
+              posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5+0.3;
+          else
+              posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5-0.2;
+      }
+      ogr = 200;
+      break;
     }
-  else    posXY = int(RobotStat.positionXYZ[position]*10/5)*0.5;
   distanceToGet += posXY;
 
   // PID control
@@ -191,6 +239,7 @@ float robot::goStraight(int numberOfBlocks)
       ek_1 = ek_0;
       readOutputFile();
       ek_0 = (distanceToGet - RobotStat.positionXYZ[position]);
+      std::cout<<"Uchyb = "<<RobotStat.positionXYZ[position]<<std::endl<<std::endl;
 
       up = K* ek_0;
       ud = K*Td*((ek_0-ek_1)/T);
@@ -212,6 +261,29 @@ float robot::goStraight(int numberOfBlocks)
       irys::sleepcp(45); //5ms
     } while (abs(ek_0*100)>=1);
   setSpeed(0,0);
+}
+
+/*
+ * Jedzie do środka klocka
+ */
+void robot::goMiddle(void){
+  this->goStraight(1,1);
+  this->turn(direction(lewo));
+  this->goStraight(1,1);
+}
+
+/*
+ * Jedzie do przeszkody
+ */
+void robot::goToObstacle(void){
+  this->goStraight(1,2);
+}
+
+/*
+ * Odjeżdza od przeszkody
+ */
+void robot::goFromObstacle(void){
+  this->goStraight(1,3);
 }
 
 /*

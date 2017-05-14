@@ -7,35 +7,47 @@
 
 using namespace std;
 
-string ControlFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/c/Commands0.txt";
-string OutputFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/c/Output0.txt";
+//Podaj ścieżkę do plików
+string pathToFile = "/home/damian/git-repos/symulator-mini-rysi/vrep/c/";
+string path;
+int num = 0;
 
 int main(int argc, char *argv[])
 {
-  float a = -2.1;
-  //cout << direction(back) << endl<<endl;
- robot robocik(ControlFile,OutputFile);    ///Tworzymy pojedynczego robota (mozna stworzyc tablice, czyli kilka)
- //robocik.setSpeed(10,10);
+
+  int i=0;
+ robot robocik(pathToFile,0);    ///Tworzymy pojedynczego robota (mozna stworzyc tablice, czyli kilka)
   robocik.stopSimulation(0);//start
   irys::sleepcp(50); //50ms
- robocik.turn(direction(prawo));
- robocik.goStraight(1);
- robocik.turn(direction(prawo));
- robocik.goStraight(2);
- robocik.turn(direction(prawo));
- robocik.goStraight(3);
- robocik.turn(direction(prawo));
- robocik.goStraight(1);
- robocik.turn(direction(back));
- robocik.goStraight(1);
- //cout<< robocik.goStraight(1)<<endl;
- //robocik.turn(2);
+//  robocik.layDown();
+//  robocik.turn(2);
+//  robocik.goToObstacle();
+//  irys::sleepcp(1000);
+//  robocik.goFromObstacle();
+//  robocik.standUp();
 
- //cout << robocik.getOrientation()<<endl;
 
- //robocik.goStraight(1);
- cout << "kurwa2"<<endl;
- //robocik.stopSimulation(1);//start
+  ////// Zacznij z pozycji 0;0
+    robocik.goMiddle();
+  ////// Zacznij z pozycji 0.25; 0.25
+  // Przykładowa trajektoria:
+    robocik.turn(direction(prawo));
+    robocik.goStraight(1,0);
+    robocik.turn(direction(prawo));
+    robocik.goStraight(2,0);
+    robocik.turn(direction(prawo));
+    robocik.goStraight(3,0);
+    robocik.turn(direction(prawo));
+    robocik.goStraight(1,0);
+    robocik.turn(direction(back));
+    robocik.goStraight(1,0);
+  //Dojazd i odjazd od przeszkody, gdy leży, przykład
+    robocik.layDown();
+    robocik.goToObstacle();
+    irys::sleepcp(1000);
+    robocik.goFromObstacle();
+    robocik.standUp();
+
   return 0;
 }
 
