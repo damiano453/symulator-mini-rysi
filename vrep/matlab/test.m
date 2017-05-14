@@ -86,6 +86,8 @@ if (clientID>-1)
             if(fidout~=-1)
                 fprintf(fidout,'pos+ori:\t%f\t%f\t%f\n',position(1),position(2),orientation(3));
                 fprintf(fidout,'prox:\t%f\t%f\t%f\n',0,0,0);
+                fprintf(fidout,'valid:\t%d\t%d\t%d\n',0,0,0);                fprintf(fidout,'pos+ori:\t%f\t%f\t%f\n',position(1),position(2),orientation(3));
+                fprintf(fidout,'prox:\t%f\t%f\t%f\n',0,0,0);
                 fprintf(fidout,'valid:\t%d\t%d\t%d\n',0,0,0);
             end
             fclose(fidout);

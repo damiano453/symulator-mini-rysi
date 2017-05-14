@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
+#include <cstdlib>
+
 
 #include "robotsimswarmapibody.h"
 
@@ -38,6 +40,7 @@ public:
   void stopSimulation(int stop);    ///0 - start;  1 - stop.
   //informacje do sterowania ||*(&)->x || *(&+1)->y
   float* getAbsolutePosition();
+  float getOrientation();
   //informacje i kontrola
   int getDistance(int sensornumber);
   void setSpeed(int left, int right);
