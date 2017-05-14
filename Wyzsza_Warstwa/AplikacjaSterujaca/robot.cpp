@@ -203,7 +203,7 @@ float robot::goStraight(int numberOfBlocks)
       ek_0 = (distanceToGet - mul*RobotStat.positionXYZ[position]);
 
       std::cout<<"control error = "<<ek_0<<std::endl;
- //pause();
+ pause();
       up = K* ek_0;
       ud = K*Td*((ek_0-ek_1)/T);
       ui = ui_1+K/Ti*T*((ek_1+ek_0)/2);
