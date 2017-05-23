@@ -1,1 +1,0 @@
-/usr/bin/cc     CMakeFiles/c.dir/main.c.o CMakeFiles/c.dir/extApiPlatform.c.o CMakeFiles/c.dir/extApi.c.o  -o c -rdynamic libMATH.a 

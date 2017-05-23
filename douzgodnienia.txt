@@ -1,0 +1,19 @@
+Kuba:
+	ścieżki dla vrepa
+	wykrywanie kolizji z przeszkodami i innymi robotami (info z vrepa)
+	jak korzystać z komunikacji
+
+Damian:
+	TODO
+	czasem się zapycha
+	zahardkodowane wartości
+	płynne wstawanie
+	M_PI
+
+Inez:
+	lepsza implementacja komunikacji między programami
+	jak uruchamiać podprogramy?
+
+Ogólnie:
+	przenieść start i reset symulacji do mastera
+	napisać mastera (uruchamianie wątków)

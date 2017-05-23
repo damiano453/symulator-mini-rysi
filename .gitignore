@@ -4,6 +4,7 @@ build-AplikacjaSterujaca-Desktop-Release/
 build-AplikacjaSterujaca-Desktop-Default/
 Commands0.txt
 Output0.txt
-number
-sym
-test.m
+.vs/
+Debug/
+*.exe
+
