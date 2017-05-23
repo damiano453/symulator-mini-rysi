@@ -5,7 +5,6 @@
 #include <math.h>
 //#include <conio.h>
 //#include <Windows.h>
-#include <pthread.h>
 
 //#include <unistd.h>
 
@@ -13,7 +12,7 @@
 #include "extApiPlatform.h"
 #include "extApiInternal.h"
 
-#define MODELPATH "/home/damian/git-repos/symulator-mini-rysi/vrep/Robot.ttm"
+#define MODELPATH "E:/Robot.ttm"
 #define RADIUS 0.15
 #define SPACESIZE 3
 #define SHAPEMINID 2
@@ -39,7 +38,7 @@ int main(int argc, char *argv[])
 		sscanf(argv[3],"%f",spawn+1);
 	}
 	//simxFinish(-1);
-	int cid=simxStart("127.0.0.1",19997,true,true,5000,5);
+	int cid=simxStart("127.0.0.1",19997+robotid,true,true,5000,5);
 
 	if(cid>-1) {
 		//KOD programu
@@ -77,7 +76,9 @@ int main(int argc, char *argv[])
 		strcat(commandfilename,suffix);
 		strcat(outputfilename,suffix);
 
-		FILE *commandfile,*outputfile; // Otwieram i zamykam w p?tli, bo nie dzia?a
+		FILE *commandfile,*outputfile;
+		commandfile=fopen(commandfilename,"r");
+		outputfile=fopen(outputfilename,"wt");
 
 		float position[]= {0.0,0.0,0.0};
 		float orientation[]= {0.0,M_PI/2,0.0};
@@ -113,8 +114,8 @@ int main(int argc, char *argv[])
 		printf("dt=%f\n",dt);
 		simxSetBooleanParameter(cid,sim_boolparam_realtime_simulation,true,simx_opmode_oneshot);
 
-		simxStopSimulation(cid,simx_opmode_blocking);
-		simxStartSimulation(cid,simx_opmode_blocking);
+		//simxStopSimulation(cid,simx_opmode_blocking);
+		//simxStartSimulation(cid,simx_opmode_blocking);
 
 		while(1) {
 
@@ -122,9 +123,9 @@ int main(int argc, char *argv[])
 			int cmd;
 
 			//Odczyt rozkazów
-			commandfile=fopen(commandfilename,"r");
+
+			rewind(commandfile);
 			fscanf(commandfile,"%f\t%f\t%f\n%d",speeds,speeds+1,tilt+2,&cmd);
-			fclose(commandfile);
 
 			if(cmd!=0/*||kbhit()*/) {
 				responseCode=simxStopSimulation(cid,simx_opmode_blocking);
@@ -183,17 +184,19 @@ int main(int argc, char *argv[])
 			}*/
 
 			//Zapis pomiarów
-			outputfile=fopen(outputfilename,"wt");
+			rewind(outputfile);
 			fprintf(outputfile,"pos+ori:\t%f\t%f\t%f\n",position[0],position[1],orientation[2]);
 			fprintf(outputfile,"prox:\t%f\t%f\t%f\n",norm(pP),norm(pG),norm(pT));
 			fprintf(outputfile,"valid:\t%d\t%d\t%d\n",bP,bG,bT);
 			//fprintf(outputfile,"objs:\t%d\t%d\t%d\n",hP,hG,hT);
-			fclose(outputfile);
+			fflush(outputfile);
 
 			extApi_sleepMs(dt*1000);
 		}
 
-		simxFinish(cid);
+		fclose(commandfile);
+		fclose(outputfile);
+		//simxFinish(cid);
 		exit(EXIT_SUCCESS);
 	} else {
 		printf("Nie mozna nawiazac polaczenia z VREPem :(\n");
